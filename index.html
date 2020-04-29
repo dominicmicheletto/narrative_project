@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="iso-8859-7" />
+    <title>Modding in the Sims 4 - Thought Process to Realisation</title>
+    <link href="styles/master.css" rel="stylesheet" type="text/css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script src="scripts/p5.min.js" type="text/javascript"></script>
+    <script src="scripts/script.js" type="text/javascript"></script>
+  </head>
+  <body class="ui-widget">
+    <div id="main">
+      <h1 id="title">Modding in the Sims 4 - Thought Process to Realisation</h1>
+      <nav>
+        <a href="./" class="current">Home</a>
+      </nav>
+      <p></p>
+      <div id="progress"><div class="progress-label">0</div></div>
+      <p></p>
+      <div id="tabs">
+        <ul>
+          <li><a href="#tabs-1">Prelude</a></li>
+          <li><a href="#tabs-2" class="disabled">Modding Terms</a></li>
+          <li><a href="#tabs-3" class="disabled">Programs &amp; Utilities</a></li>
+          <li><a href="#tabs-4" class="disabled">Motivation</a></li>
+          <li><a href="#tabs-5" class="disabled">Features List</a></li>
+          <li><a href="#tabs-6" class="disabled">Getting Started</a><li>
+        </ul>
+        <div id="tabs-1">
+          <p>
+            Modding in the Sims 4 is in some ways both extremely easy and mildly difficult. From a coding standpoint, the Sims 4 is extremely data-driven, and this makes it quite easy to add and modify almost every aspect of the game’s tuning that is not hidden behind C++. On the other hand, there is a bit of legwork that’s required in order to understand how to mod the game. The biggest hurdle in learning how to mod the game is understanding the TDESCS – tuning descriptions – which the Devs use as an internal documentation for the tuning structure of the game.
+          </p>
+          <p>
+            It is important to understand how the XML tuning is laid out, as while one can haphazardly throw something together that “works,” it will often be rife with errors. Many beginning modders start out without fully understanding what they’re doing and can get stuck. I have also encountered people who wish to endeavor upon a journey of modding, only to not understand what they’re doing.
+          </p>
+          <p>
+            The game is built on 3 principle levels, C++, which is impossible to access, Python, whose source code needs to be decompiled once every patch, and Tuning, which is custom XML that gets loaded and read by the game and turned into Python dynamically. Most of what can be achieved in game can be done with simple XML changes or additions, but sometimes Python is required. This is often called “injection,” as the custom tuning is “injected” into the game (since it can usually be hardcoded by being added into the tuning). Injection is done to prevent conflicts with other mods which would like to modify the same resource – for example, often configuration pie menus are added to mailboxes, and if the tuning for mailboxes were overridden instead of injected, only the first mod that overrode the tuning would be registered.
+          </p>
+          <p>
+            This also brings up the interesting point of load order and conflicts. Sometimes, two mods will modify the same resource, and thus load order issues result. Only the first instance of a tuning will be loaded by the game, and all subsequent versions will be ignored. This means that parts of a mod which depend on these overrides may not work.
+          </p>
+          <p>
+            In order to mod the game, it is required to have at a minimum something which can extract and compile tuning to and from packages. The best tool for this is Sims 4 Studio, and it is what I personally use. A Python editor is also handy – personally, I use PyCharm. An invaluable tool also to have is the TDESC explorer, which allows an easy viewing of the TDESCs.
+          </p>
+          <p><a id="1" class="advance">Continue to the next section</a></p>
+        </div>
+        <div id="tabs-2">
+          <p>
+            Before I get into the nitty-gritty of modding in the Sims 4, it's
+            important to establish some ground terms so that when I refer to them
+            later, it's clear what I mean.
+          </p>
+          <p>
+            Below is a table of some terms relating to Sims 4 tuning which will
+            be important to have some understanding of.
+          </p>
+          <table class="styled">
+            <thead>
+              <tr>
+                <th>Term</th>
+                <th>Definition</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th>Loot</th>
+                <td>
+                  A loot is, for lack of a better term, a piece of code that
+                  executes to perform some action. Often these are used to add
+                  traits, buffs, and commodities to Sims.
+                </td>
+              </tr>
+              <tr>
+                <th>Trait</th>
+                <td>
+                  A trait is a straightforward concept, in the strictest
+                  sense – it is a flag on a Sim which can be used to add
+                  various stuff. Traits are more permanent than buffs and can
+                  be used to ensure that buffs (which can get lost during
+                  travelling) stay added to the Sim. Traits can be used in
+                  numerous ways to add buffs, commodities, and affordances
+                  to Sims.
+                </td>
+              </tr>
+              <tr>
+                <th>Buff</th>
+                <td>
+                  A buff, commonly called a moodlet, is also a type of flag on
+                  a Sim. When they are visible, they often affect the mood of
+                  the Sim they’re on, but they can do much more. Buffs can do
+                  many things, like add affordances to Sims, add commodities,
+                  change the decay rate of commodities, and more. They can
+                  also be used to add CAS parts to Sims via appearance modifiers.
+                </td>
+              </tr>
+              <tr>
+                <th>Appearance Modifer</th>
+                <td>
+                  An appearance modifier adds a temporary overlay to the Sim,
+                  changing while active every outfit the Sim has.
+                </td>
+              </tr>
+              <tr>
+                <th>CAS Part</th>
+                <td>
+                  CAS (Create A Sim) parts refer to the actual “item” the Sim
+                  has on them.
+                </td>
+              </tr>
+              <tr>
+                <th>Commodity</th>
+                <td>
+                  A commodity is a, on a very basic level, a number attached to
+                  a Sim, that can increase and decrease within a given range.
+                  Commodities have discreet ranges, called states, and when a
+                  given commodity reaches a certain state, things (such as
+                  buffs being added, or loots being fired) can occur.
+                  Commodities are very useful and versatile tools, and can be
+                  used for various things, such as timers, trackers, or with
+                  traits in conjunction with proximity buffs, as an example.
+                </td>
+              </tr>
+              <tr>
+                <th>Proximity Buff</th>
+                <td>
+                  A proximity buff is a buff that gets added to a Sim when
+                  they are near (in proximity to) something, the something of
+                  which is dependent on the tests described in the tuning.
+                </td>
+              </tr>
+              <tr>
+                <th>Affordance</th>
+                <td>
+                  At the simplest level, an affordance is nearly synonymous
+                  with what we could call an “interaction.” An affordance is
+                  something that a Sim is “afforded” – usually an interaction,
+                  but it can be other things as well.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <p><a id="2" class="advance">Learn about Sims 4 Modding programs</a></p>
+        </div>
+        <div id="tabs-3">
+          <p>
+            Modding for the Sims 4 is far from a walk in the park. While the Sims
+            4 is in some respects quite extensible and easy to mod, there are a
+            few hurtles so to speak to overcome before one can dive in.
+          </p>
+          <p>
+            Below is a table of some common programs that are needed/useful to
+            mod the Sims, as well as some more useful information about modding.
+          </p>
+          <table class="styled">
+            <thead>
+              <tr>
+                <th>&nbsp;</th>
+                <th>Type</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th>Sims 4 Studio (S4S)</th>
+                <td>Application</td>
+                <td>
+                  Sims 4 Studio is probably one of the most invaluable programs
+                  to a those who wish to mod in the Sims 4. With S4S, one can
+                  easily extract Sims 4 tuning files, and create new ones.
+                  It can also be used to view package files and to piece together
+                  new ones.
+                </td>
+              </tr>
+              <tr>
+                <th>PyCharm</th>
+                <td>Application</td>
+                <td>
+                  PyCharm is a popular Python Editor/IDE (Integrated Development
+                  Environment) among those who make script mods in the Sims 4.
+                  PyCharm allows for creating and editing Python files, which
+                  are the components of Script Mods. There is also a starter
+                  project for Sims 4 Script Mods, which is another good reason
+                  to consider using PyCharm when modding for the Sims 4.
+                </td>
+              </tr>
+              <tr>
+                <th>TDESC Explorer</th>
+                <td>Application</td>
+                <td>
+                  This is an application which allows a user to easily and
+                  rapidly explore the game's TDESCs, which is imperative to
+                  anyone who wishes to mod.
+                </td>
+              </tr>
+              <tr>
+                <th>Notepad++</th>
+                <td>Application</td>
+                <td>
+                  While this program isn't entirely needed like some of the
+                  others, one may find it useful to use Notepad++ to edit and
+                  view XML files, of which tuning is composed.
+                </td>
+              </tr>
+              <tr>
+                <th>TDESC</th>
+                <td>Modding Utility</td>
+                <td>
+                  TDESC, or Tuning Description, is a file which describes the
+                  tuning that is used by the Sims 4. While it takes some getting
+                  used to, to fully be able to appreciate and comprehend how to
+                  understand them, it is imperative that any modder have an
+                  intimate understanding of what is allowed in the game and how
+                  to "speak" the language of tuning used by it.
+                </td>
+              </tr>
+              <tr>
+                <th>String Table</th>
+                <td>Tuning Component</td>
+                <td>
+                  A String Table is a binary file which describes the "strings",
+                  or text, which is available to the game, as well as localisations
+                  for said text. Any mod which wishes to inclcude custom text must
+                  utilise a String Table.
+                </td>
+              </tr>
+              <tr>
+                <th>Package (<em>.package</em>)</th>
+                <td>Sims 4 Mod File</td>
+                <td>
+                  A package is one of the two principle mod file types allowed for
+                  The Sims 4. A package can contain tuning, string tables, images,
+                  as well as the definitions for custom objects and other "CC"
+                  &mdash; Custom Content: clothes, hair, makeup, etc.
+                </td>
+              </tr>
+              <tr>
+                <th>Script (<em>.ts4script</em>)</th>
+                <td>Sims 4 Mod File</td>
+                <td>
+                  While a lot is possible with tuning alone, tuning has its limits.
+                  Sometimes, either to avoid conflicts with other mods, or to
+                  achieve what is desired, one must employ the use of Script Mods.
+                  Script Mods consist of zipped compiled Python (<code>.pyc</code>)
+                  files. These scripts can override in-game scripts, add to them,
+                  or describe entirely new ones.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <p><a id="3" class="advance">So, why did I do this?</a></p>
+        </div>
+        <div id="tabs-4">
+          <p>
+            Some time around September of 2019, my friend (whom at the time I
+            did not know very well) had requested a vampire for the Sims 4, one
+            which would allow for vampires and their victims to get bloody when
+            bitten. The modder who stepped forward to offer to make it, unfortunately,
+            was soon revealed to be one that was anything but fast. To put it
+            nicely, contents drift faster than they mod. They are also rather
+            distractable, and had often given up on creating the mod for them in
+            favour of pursuing other projects.
+          </p>
+          <p>
+            After a few months of little to no progress, (and having gotten aquainted
+            with who had at that point become a good friend of mine), I decided to
+            surprise my friend during one of their lamentations about how the mod
+            would never get finished.
+          </p>
+          <p>
+            After 8 or so hours of intense modding, the first version of my mod
+            was complete. Meanwhile, to date, the other modder still has not finished
+            their implementation of this mod.
+          </p>
+          <p><a id="4" class="advance">Learn about what the mod can do</a></p>
+        </div>
+        <div id="tabs-5">
+          <p>
+            In this most simple of senses, this mod allows for a more immersive
+            experience when playing Vampires, by allowing that they and their
+            victims become bloody. However, this mod is much more than just
+            that. Below is a feature least of the mod as it current stands,
+            which is important as what is in it and what I envisioned it having
+            helped shaped what I did during my creation of the mod.
+          </p>
+          <ul>
+            <li>A tiered system for bloodiness of both Vampires and non-Vampires
+            (aka their Victims)</li>
+            <li>Victims have a tiered system of blood loss:
+              <a href="#" class="popup" id="blood_loss_tier_1_buff">small</a>,
+              <a href="#" class="popup" id="blood_loss_tier_2_buff">medium</a>, and
+              <a href="#" class="popup" id="blood_loss_tier_3_buff">large</a>.
+              At max blood loss, the Sim will die of exsanguination.</li>
+            <li>Vampires will get a new
+                <a href="#" class="popup" id="bloody_mess_buff">buff</a>
+                about being covered in blood</li>
+            <li>When a Sim is very drained, they will get a
+                <a href="#" class="popup" id="bleeding_out_warning">warning</a>
+                about having lost a lot of blood.</li>
+            <li>A reduction in the cooldown for drinking from the same Sim twice</li>
+            <li>A new death type: Exsanguination</li>
+            <li>Alterations to <code>Ask for Permission to Drink</code>,
+                <code>Compel for Small Drink</code>,
+                <code>Compel for Large Drink</code>, and
+                <code>Drain Life Spirit</code> interactions:
+              <ul>
+                <li>Both
+                  <a href="#" class="popup" id="bloody_vampire_example">Vampire</a> and
+                  <a href="#" class="popup" id="bloody_victim_example">Victim<a/>
+                  will get appropriately bloody</li>
+                <li>Chance of
+                    <a href="#" class="popup" id="death_by_exsanguination">death</a>
+                    of the Victim when being drank from</li>
+              </ul>
+            </li>
+            <li>A new ghost type to go with the new death:
+              <ul>
+                <li>Called <a href="#" class="popup" id="death_by_exsanguination_trait">
+                  "Death By Exsanguination"</a></li>
+                <li><a href="#" class="popup" id="angry_around_vampires">
+                  Gets angry around Vampires</a></li>
+                <li>Gets tired more quickly</li>
+              </ul>
+            </li>
+            <li>New interactions on tubs and showers to
+              <a href="#" class="popup" id="wash_off_blood_interaction">wash</a>
+              off blood</li>
+            <li>When brushing a bloody Vampire's teeth, blood on their mouth will
+                also be cleaned</li>
+            <li>Vampires covered in blood will get
+              <a href="#" class="popup" id="sticky_blood_buff">uncomfortable</a> when covered
+                in blood for an extended period of time</li>
+            <li>Bloody vampires will get a
+               <a href="#" class="popup" id="want_to_wash_off_blood">Whim</a>
+               to clean themselves of blood</li>
+            <li>Getting wet (from showering, swimming, being in the rain, etc)
+                will also lessen the bloodiness of a Sim</li>
+          </ul>
+          <p><a id="5" class="advance">So, how'd I start?</a></p>
+        </div>
+        <div id="tabs-6">
+          <p></p>
+        </div>
+      </div>
+    </div>
+    <div id="footer">
+      <p>&nbsp;</p>
+    </div>
+  </body>
+</html>

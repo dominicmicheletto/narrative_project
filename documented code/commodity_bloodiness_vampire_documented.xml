@@ -1,0 +1,87 @@
+<I c="Commodity" i="statistic" m="statistics.commodity" n="LeRoiDeTout:commodity_Bloodiness_Vampire" s="10180201301905630286">
+  <!-- Commodities by default naturally "decay" over time. The default convergence value is the value which they will tend towards. -->
+  <T n="_default_convergence_value">0</T>
+  <!-- For the purposes of this commodity, these are not important. They are part of the boilerplate that goes into commodities -->
+  <U n="arrow_data">
+    <T n="negative_double_arrow">-20</T>
+    <T n="negative_single_arrow">-1</T>
+    <T n="negative_triple_arrow">-30</T>
+    <T n="positive_double_arrow">20</T>
+    <T n="positive_single_arrow">1</T>
+    <T n="positive_triple_arrow">30</T>
+  </U>
+  <!-- This allows for the commodity to be "simulated" (i.e. to decay naturally) when when the Sim is not active. -->
+  <V n="_off_lot_simulation" t="selectable_sims_and_npcs" />
+  <!-- This ensures that the commodity's decay is properly aligned with the in-game duration of time  -->
+  <E n="_time_passage_fixup_type">FIXUP_USING_TIME_ELAPSED</E>
+  <T n="auto_satisfy_curve_random_time_offset">120</T>
+  <!-- The amount the commodity decreases by per Sim minute -->
+  <T n="decay_rate">1</T>
+  <!-- The initial value of the commodity when it gets added to a Sim -->
+  <U n="initial_tuning">
+    <T n="_use_auto_satisfy_curve_as_initial_value">False</T>
+    <T n="_value">100</T>
+  </U>
+  <T n="max_value_tuning">720</T> <!-- The maximum value this commodity can hold -->
+  <T n="maximum_auto_satisfy_time">1440</T> <!-- The maximum amount of time this commodity will take to decay towards its convergence point -->
+  <T n="min_value_tuning">0</T> <!-- The minimum value this commodity can hold -->
+  <!-- The list of states the commodity has. Each state has a threshold value. -->
+  <L n="states">
+    <!-- When the commodity reaches the value of 0, its ground state, run the following loot. -->
+    <U>
+      <T n="value">0</T>
+      <T n="apply_loot_on_load">True</T> <!-- Always run the following loot -->
+      <L n="loot_list_on_enter_always">
+	    <!-- This loot among other things "cleans up" any buffs that may be on the Sim from when they were bloody -->
+        <T>14687086323011587195<!--LootActions: LeRoiDeTout:loot_Buff_RemoveIsBloody--></T>
+      </L>
+    </U>
+	<!-- Between the values of 1 and 240 -->
+    <U>
+      <T n="value">1</T>
+	  <!-- The buff to be added to the Sim -->
+      <U n="buff">
+        <T n="buff_type">12951698095369454491<!--Buff: LeRoiDeTout:buff_Hidden_Vampire_Bloodiness_Tier1--></T>
+      </U>
+      <T n="apply_loot_on_load">True</T>
+	  <!-- This is the threshold of the value within this state after (or before) which to add the buff -->
+      <V n="buff_add_threshold" t="enabled">
+        <U n="enabled">
+          <T n="value">30</T> <!-- In this case, the buff only gets added when the value of this commodity is above 30 -->
+        </U>
+      </V>
+      <L n="loot_list_on_enter_always">
+	    <!-- This adds a buff that indicates the Sim is bloody, which is used for several things, such as adding an interaction to allow them to wash off the blood -->
+        <T>11512958535900735678<!--LootActions: LeRoiDeTout:loot_Buff_Make_Bloody--></T>
+      </L>
+    </U>
+	<!-- Between the values of 241 and 480 -->
+    <U>
+      <T n="value">241</T>
+      <T n="apply_loot_on_load">True</T>
+      <U n="buff">
+        <T n="buff_type">12951698095369454488<!--Buff: LeRoiDeTout:buff_Hidden_Vampire_Bloodiness_Tier2--></T>
+      </U>
+      <L n="loot_list_on_enter_always">
+        <T>11512958535900735678<!--LootActions: LeRoiDeTout:loot_Buff_Make_Bloody--></T>
+      </L>
+    </U>
+	<!-- Between the values of 481 and the max, 720 -->
+    <U>
+      <T n="value">481</T>
+      <T n="apply_loot_on_load">True</T>
+      <U n="buff">
+        <T n="buff_type">12951698095369454489<!--Buff: LeRoiDeTout:buff_Hidden_Vampire_Bloodiness_Tier3--></T>
+      </U>
+      <L n="loot_list_on_enter_always">
+        <T>11512958535900735678<!--LootActions: LeRoiDeTout:loot_Buff_Make_Bloody--></T>
+      </L>
+    </U>
+  </L>
+  <!-- For the purposes of this commodity, these are boilerplate code -->
+  <T n="ui_sort_order">0</T>
+  <U n="ui_visible_distress_threshold">
+    <T n="threshold_value">0</T>
+  </U>
+  <T n="weight">1</T>
+</I>

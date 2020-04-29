@@ -1,0 +1,124 @@
+<I c="Buff" i="buff" m="buffs.buff" n="LeRoiDeTout:buff_Hidden_Vampire_IsBloody" s="18147728863245560070">
+  <T n="audio_sting_on_add" p="InGame\Audio\Stings\sting_buff_gain.propx">39b2aa4a:00000000:8af8b916cf64c646</T>
+  <T n="audio_sting_on_remove" p="InGame\Audio\Stings\sting_buff_loss.propx">39b2aa4a:00000000:3bf33216a25546ea</T>
+  <T n="icon" p="InGame\UI\Icons\Debug\missing_image.png">2f7d0004:00000000:30f0846c783606f9</T>
+  <T n="visible">False</T>
+  <!-- A test set defines for whom this buff is valid. If a Sim does not pass this test set, it will not be added to them.
+	   In this case, the Sim must be a vampire. -->
+  <V n="_add_test_set" t="tests_set">
+    <L n="tests_set">
+      <L>
+        <V t="test_set_reference">
+          <T n="test_set_reference">153414<!--TestSetInstance: testSet_Vampires_Manifested--></T>
+        </V>
+      </L>
+    </L>
+  </V>
+  <!-- When a Sim has this buff, add the following affordances... -->
+  <L n="target_super_affordances">
+    <!-- This adds the Washing Off Blood (in the shower) affordance to objects marked as a "shower" -->
+    <U>
+      <T n="affordance">12871374103073290096<!--SuperInteraction: LeRoiDeTout:shower_WashOffBlood--></T>
+      <V n="object_filter" t="filter_by_tags">
+        <U n="filter_by_tags">
+          <L n="tags">
+            <E>Func_Shower</E>
+          </L>
+        </U>
+      </V>
+    </U>
+	<!-- Similarly, this adds the Washing Off Blood (in the bathtub) affordance to objects marked as a "bathtub" -->
+    <U>
+      <T n="affordance">15600820728953935696<!--SuperInteraction: LeRoiDeTout:bathtub_WashOffBlood--></T>
+      <V n="object_filter" t="filter_by_tags">
+        <U n="filter_by_tags">
+          <L n="tags">
+            <E>Func_Bathtub</E>
+          </L>
+        </U>
+      </V>
+    </U>
+  </L>
+  <!-- Game effect modifiers can do many things. In this case, it is used to "inject" into interactions without needing Python or overriding the 
+       interactions themselves -->
+  <U n="game_effect_modifier">
+    <L n="_game_effect_modifiers">
+	  <!-- Modify affordances by... -->
+      <V t="affordance_modifier">
+	    <!-- This is used to have any interaction where the Sim is "wet" have an effect on the bloodiness level of the Sim. This simulates having the 
+		     water "wash off" some of the blood. -->
+        <U n="affordance_modifier">
+		  <!-- Adding to their basic_extras... -->
+          <L n="basic_extras">
+		    <!-- Add the following buff to Sims at the beginning of the affordance -->
+            <V t="buff_fire_and_forget">
+              <U n="buff_fire_and_forget">
+                <U n="buff">
+                  <T n="buff_type">13082647321025906194<!--Buff: LeRoiDeTout:buff_Hidden_Vampire_IsBloodyAndBathingOrSwimming--></T>
+                </U>
+                <V n="timing" t="at_beginning" />
+              </U>
+            </V>
+            <!-- And add the following loot, at the end -->
+			<V t="loot">
+              <U n="loot">
+                <L n="loot_list">
+                  <T>13565722924099879239<!--LootActions: LeRoiDeTout:loot_Buff_RemoveIsBloodyAndBathingOrSwimming--></T>
+                </L>
+                <V n="timing" t="at_end" />
+              </U>
+            </V>
+            <!-- And this loot at the beginning -->
+			<V t="loot">
+              <U n="loot">
+                <L n="loot_list">
+                  <T>11079252568251919900<!--LootActions: LeRoiDeTout:loot_Buff_IsBloodyAndBathingOrSwimming_StaticDecrease--></T>
+                </L>
+                <V n="timing" t="at_beginning" />
+              </U>
+            </V>
+          </L>
+		  <!-- Any affordance which is included in this list has this modification applied to it. -->
+          <L n="affordance_lists">
+            <T>9841173150624023459<!--AffordanceList: LeRoiDeTout:affordanceList_BathingAndSwimmingInteractions--></T>
+          </L>
+        </U>
+      </V>
+      <V t="affordance_modifier">
+	    <!-- This is used to have the two brush teeth interactions also remove the blood from the Vampire's mouth -->
+        <U n="affordance_modifier">
+          <L n="basic_extras">
+            <V t="buff_fire_and_forget">
+              <U n="buff_fire_and_forget">
+                <U n="buff">
+                  <T n="buff_type">14261367952428308485<!--Buff: LeRoiDeTout:buff_Hidden_Vampire_IsBloodyAndBrushingTeeth--></T>
+                </U>
+                <V n="timing" t="at_beginning" />
+              </U>
+            </V>
+            <V t="loot">
+              <U n="loot">
+                <L n="loot_list">
+                  <T>10637062486299053899<!--LootActions: LeRoiDeTout:loot_Buff_IsBloodyAndBrushingTeeth_RemoveBuffs--></T>
+                </L>
+                <V n="timing" t="at_end" />
+              </U>
+            </V>
+          </L>
+          <L n="affordances">
+            <T>14238<!--SuperInteraction: sink_BrushTeeth--></T>
+            <T>212217<!--SuperInteraction: sink_BrushTeeth_OffTheGrid--></T>
+          </L>
+        </U>
+      </V>
+	  <!-- While a Sim has this buff, increase the following commodity. This commodity gives Vampires a "sticky blood" buff when it reaches 
+	       a certain threshold, simulating having had the bloody on their face for a while and it having "dried". -->
+      <V t="continuous_statistic_modifier">
+        <U n="continuous_statistic_modifier">
+          <T n="modifier_value">1</T> <!-- For every Sim minute with this buff, the commodity is increased by a value of 1 -->
+          <T n="statistic">10515284691413892963<!--Commodity: LeRoiDeTout:commodity_trait_VampireIsBloody_StickyBlood--></T>
+        </U>
+      </V>
+    </L>
+  </U>
+</I>

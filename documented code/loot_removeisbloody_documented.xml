@@ -1,0 +1,24 @@
+<I c="LootActions" i="action" m="interactions.utils.loot" n="LeRoiDeTout:loot_Buff_RemoveIsBloody" s="14687086323011587195">
+  <!-- This undoes what the make bloody loot does, removing any buffs the Sim might have had from the commodity, and the trait they received. -->
+  <L n="loot_actions">
+    <V t="buff_removal">
+      <U n="buff_removal">
+        <L n="buffs_to_remove">
+          <T>18147728863245560070<!--Buff: LeRoiDeTout:buff_Hidden_Vampire_IsBloody--></T>
+          <T>12951698095369454491<!--Buff: LeRoiDeTout:buff_Hidden_Vampire_Bloodiness_Tier1--></T>
+          <T>12951698095369454488<!--Buff: LeRoiDeTout:buff_Hidden_Vampire_Bloodiness_Tier2--></T>
+          <T>12951698095369454489<!--Buff: LeRoiDeTout:buff_Hidden_Vampire_Bloodiness_Tier3--></T>
+        </L>
+      </U>
+    </V>
+    <V t="trait_remove">
+      <U n="trait_remove">
+        <V n="trait" t="specific_trait">
+          <U n="specific_trait">
+            <T n="specific_trait">11330798127682414247<!--Trait: LeRoiDeTout:trait_VampireIsBloody--></T>
+          </U>
+        </V>
+      </U>
+    </V>
+  </L>
+</I>

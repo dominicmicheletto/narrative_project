@@ -1,0 +1,24 @@
+<I c="Buff" i="buff" m="buffs.buff" n="LeRoiDeTout:buff_Hidden_Vampire_Bloodiness_Tier1" s="12951698095369454491">
+  <T n="audio_sting_on_add" p="InGame\Audio\Stings\sting_buff_gain.propx">39b2aa4a:00000000:8af8b916cf64c646</T>
+  <T n="audio_sting_on_remove" p="InGame\Audio\Stings\sting_buff_loss.propx">39b2aa4a:00000000:3bf33216a25546ea</T>
+  <T n="icon" p="InGame\UI\Icons\Debug\missing_image.png">2f7d0004:00000000:30f0846c783606f9</T>
+  <T n="visible">False</T>
+  <!-- This is the "main part" of the buff. When a Sim is equipped with this buff... -->
+  <V n="appearance_modifier" t="enabled">
+    <U n="enabled">
+      <L n="appearance_modifiers">
+        <L>
+          <U>
+            <V n="modifier" t="set_cas_part">
+              <U n="set_cas_part">
+			     <!-- Apply to all their outfits the following CAS part. This references a custom CAS part which adds a bloody overlay to the mouth of the Sim. -->
+                <T n="cas_part">9223372040902991560</T>
+              </U>
+            </V>
+          </U>
+        </L>
+      </L>
+      <E n="priority">SICKNESS</E>
+    </U>
+  </V>
+</I>
