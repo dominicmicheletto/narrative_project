@@ -165,7 +165,7 @@
 
         let goTo = function(tabNumber) {
           return function() {
-            disable_tabs(tabNumber);
+            disable_tabs(tabNumber - 1);
             progress.progressbar("value", tabNumber);
           };
         };
@@ -194,6 +194,10 @@
           {
             "commandName": "goto 6",
             "runCommand": goTo(6)
+          },
+          {
+            "commandName": "goto 7",
+            "runCommand": goTo(7)
           }
         ];
 
