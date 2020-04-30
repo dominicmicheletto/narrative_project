@@ -1,7 +1,276 @@
 (function() {
 
+  $(function() {
+    $.widget( "custom.combobox", {
+      _create: function() {
+        this.wrapper = $( "<span>" )
+          .addClass( "custom-combobox" )
+          .insertAfter( this.element );
+
+        this.element.hide();
+        this._createAutocomplete();
+        this._createShowAllButton();
+      },
+
+      _createAutocomplete: function() {
+        var selected = this.element.children( ":selected" ),
+          value = selected.val() ? selected.text() : "";
+
+        this.input = $( "<input>" )
+          .appendTo( this.wrapper )
+          .val( value )
+          .attr( "title", "" )
+          .addClass( "custom-combobox-input ui-widget ui-widget-content ui-state-default ui-corner-left" )
+          .autocomplete({
+            delay: 0,
+            minLength: 0,
+            source: $.proxy( this, "_source" )
+          })
+          .tooltip({
+            classes: {
+              "ui-tooltip": "ui-state-highlight"
+            }
+          });
+
+        this._on( this.input, {
+          autocompleteselect: function( event, ui ) {
+            ui.item.option.selected = true;
+            this._trigger( "select", event, {
+              item: ui.item.option
+            });
+          },
+
+          autocompletechange: "_removeIfInvalid"
+        });
+      },
+
+      _createShowAllButton: function() {
+        var input = this.input,
+          wasOpen = false;
+
+        $( "<a>" )
+          .attr( "tabIndex", -1 )
+          .attr( "title", "Show All Items" )
+          .tooltip()
+          .appendTo( this.wrapper )
+          .button({
+            icons: {
+              primary: "ui-icon-triangle-1-s"
+            },
+            text: "&nbsp;"
+          })
+          .removeClass( "ui-corner-all" )
+          .addClass( "custom-combobox-toggle ui-corner-right" )
+          .on( "mousedown", function() {
+            wasOpen = input.autocomplete( "widget" ).is( ":visible" );
+          })
+          .on( "click", function() {
+            input.trigger( "focus" );
+
+            // Close if already visible
+            if ( wasOpen ) {
+              return;
+            }
+
+            // Pass empty string as value to search for, displaying all results
+            input.autocomplete( "search", "" );
+          });
+      },
+
+      _source: function( request, response ) {
+        var matcher = new RegExp( $.ui.autocomplete.escapeRegex(request.term), "i" );
+        response( this.element.children( "option" ).map(function() {
+          var text = $( this ).text();
+          if ( this.value && ( !request.term || matcher.test(text) ) )
+            return {
+              label: text,
+              value: text,
+              option: this
+            };
+        }) );
+      },
+
+      _removeIfInvalid: function( event, ui ) {
+
+        // Selected an item, nothing to do
+        if ( ui.item ) {
+          return;
+        }
+
+        // Search for a match (case-insensitive)
+        var value = this.input.val(),
+          valueLowerCase = value.toLowerCase(),
+          valid = false;
+        this.element.children( "option" ).each(function() {
+          if ( $( this ).text().toLowerCase() === valueLowerCase ) {
+            this.selected = valid = true;
+            return false;
+          }
+        });
+
+        // Found a match, nothing to do
+        if ( valid ) {
+          return;
+        }
+
+        // Remove invalid value
+        this.input
+          .val( "" )
+          .attr( "title", value + " didn't match any item" )
+          .tooltip( "open" );
+        this.element.val( "" );
+        this._delay(function() {
+          this.input.tooltip( "close" ).attr( "title", "" );
+        }, 2500 );
+        this.input.autocomplete( "instance" ).term = "";
+      },
+
+      _destroy: function() {
+        this.wrapper.remove();
+        this.element.show();
+      }
+    });
+  });
+
   $(document).ready(function() {
     const tabs = $("#tabs").tabs();
+
+    $(window).on("keyup", function(event) {
+      let keys = 'C';
+      if (event.which !== keys.charCodeAt(0)) return;
+      if (event.ctrlKey && event.altKey) {
+        let form = $("<form>");
+        let input = $("<input>", {
+          id: "cheatcode"
+        });
+        let tips = $("<p>", {
+          id: "tips",
+          class: "validateTips",
+          text: "Enter a cheat code."
+        });
+        let fieldset = $("<fieldset>", {
+          id: "cheatCodeFieldset"
+        });
+        let label = $("<label>", {
+          for: "cheatcode",
+          text: "Cheat Code: "
+        });
+        let submit = $("<input>", {
+          type: "submit",
+          tabIndex: -1,
+          css: {
+            display: "none"
+          }
+        });
+
+        let goTo = function(tabNumber) {
+          return function() {
+            disable_tabs(tabNumber);
+            progress.progressbar("value", tabNumber);
+          };
+        };
+
+        let commandList = [
+          {
+            "commandName": "goto 1",
+            "runCommand": goTo(1)
+          },
+          {
+            "commandName": "goto 2",
+            "runCommand": goTo(2)
+          },
+          {
+            "commandName": "goto 3",
+            "runCommand": goTo(3)
+          },
+          {
+            "commandName": "goto 4",
+            "runCommand": goTo(4)
+          },
+          {
+            "commandName": "goto 5",
+            "runCommand": goTo(5)
+          },
+          {
+            "commandName": "goto 6",
+            "runCommand": goTo(6)
+          }
+        ];
+
+        let find = function(element) {
+          let found = null;
+
+          commandList.forEach(function(v, i) {
+            if (v.commandName === element) {
+              found = v;
+            }
+          });
+
+          return found;
+        }
+
+        let updateTips = function(t) {
+          tips
+            .text(t)
+            .addClass( "ui-state-highlight" );
+          setTimeout(function() {
+            tips.removeClass( "ui-state-highlight", 1500 );
+          }, 500 );
+        };
+        let runCommand = function() {
+          let value = input.val();
+          if (!value) {
+            me.dialog("close");
+            return;
+          }
+
+          let found = find(value);
+          if (!found) {
+            input.addClass("ui-state-error");
+            updateTips(`Unknown command "${value}"`);
+          }
+          else {
+            found.runCommand();
+            me.dialog("close");
+          }
+        }
+
+        let me = $("<div>", {
+          id: "cheatConsole",
+          title: "Cheat Console"
+        }).dialog({
+          modal: true,
+          autoOpen: false,
+          height: 250,
+          width: 450,
+          buttons: {
+            "Run Command": runCommand,
+            Cancel: function() {
+              me.dialog("close");
+            }
+          },
+          close: function() {
+            form[ 0 ].reset();
+            input.removeClass( "ui-state-error" );
+          }
+        });
+
+        label.appendTo(fieldset);
+        input.appendTo(fieldset);
+        fieldset.appendTo(form);
+        submit.appendTo(form);
+        tips.appendTo(me);
+        form.appendTo(me);
+
+        me.dialog("open");
+
+        form.on("submit", function(event) {
+          event.preventDefault();
+          runCommand();
+        });
+      }
+    });
+
     const calculate_value = function() {
       let value = progress.progressbar("value");
       let max = progress.progressbar("option", "max");
@@ -188,8 +457,10 @@
       if (input_needed) {
         input_needed.field.on("change", function() {
           let me = $(this);
-          if (input_needed.validator(me))
+          if (input_needed.validator(me)) {
             $("<p>").append(button).appendTo(arena);
+          }
+          button.trigger("focus");
         });
         $("<p>").append($("<label>", {
           for: input_needed.field.attr("id"),
@@ -227,6 +498,12 @@
       }
     };
     handle_step();
+
+    const combobox = $("#combobox").combobox({
+      select: function(event, ui) {
+        console.log($(ui));
+      }
+    });
   });
 
 })();

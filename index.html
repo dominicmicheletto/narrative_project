@@ -27,7 +27,7 @@
           <li><a href="#tabs-4" class="disabled">Motivation</a></li>
           <li><a href="#tabs-5" class="disabled">Features List</a></li>
           <li><a href="#tabs-6" class="disabled">Getting Started</a><li>
-          <li><a href="#tabs-7" class="disabled">Tab</a></li>
+          <li><a href="#tabs-7" class="disabled">Tuning Explorer</a></li>
         </ul>
         <div id="tabs-1">
           <p>
@@ -344,9 +344,22 @@
           <form><input type="hidden" id="step" value="0" /></form>
           <div id="arena"></div>
         </div>
-      </div>
-      <div id="tabs-7">
-        <p>&nbsp;</p>
+        <div id="tabs-7">
+          <div class="ui-widget">
+            <p>
+              <label>Select the tuning file to explore: </label>
+              <select id="combobox">
+                <option value="" selected="selected">Select one...</option>
+                <option value="commodity">Bloodiness Commodity</option>
+                <option value="loot_make_bloody">"Make Bloody" Loot</option>
+                <option value="loot_remove_bloody">"Remove Bloody" Loot</option>
+                <option value="interaction">Drink Deeply Interaction</option>
+                <option value="buff_bloodiness_tier1">Tier 1 Bloodiness Buff for Vampires</option>
+                <option value="buff_isbloody">"Is Bloody" Buff for Vampires</option>
+              </select>
+            </p>
+          </div>
+        </div>
       </div>
     </div>
     </div>
