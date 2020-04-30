@@ -14,5 +14,4 @@ Use `Ctrl+Alt+C` to access the cheat console.
 | Cheat Code | Description |
 |------------|-------------|
 | goto <tab #>| Goes to the specified tab, skipping any previous required steps. |
-|-|-|
 | step.skip | Skips the current step on the "Getting Started" tab |
