@@ -134,6 +134,7 @@
 
   $(document).ready(function() {
     const tabs = $("#tabs").tabs();
+    let finished = false;
 
     $(window).on("keyup", function(event) {
       let keys = 'C';
@@ -165,8 +166,19 @@
 
         let goTo = function(tabNumber) {
           return function() {
+            if (finished) return false;
+
             disable_tabs(tabNumber - 1);
             progress.progressbar("value", tabNumber);
+
+            return true;
+          };
+        };
+
+        let setStep = function(stepNumber) {
+          return function() {
+            $("input[type=hidden]#step").val(stepNumber - 1);
+            handle_step();
           };
         };
 
@@ -198,6 +210,158 @@
           {
             "commandName": "goto 7",
             "runCommand": goTo(7)
+          },
+          {
+            "commandName": "goto 8",
+            "runCommand": goTo(8)
+          },
+          {
+            "commandName": "step.skip",
+            "runCommand": function() {
+              if (tabs.tabs( "option", "active" ) === 5)
+                next_step();
+              else
+                return false;
+
+              return true;
+            }
+          },
+          {
+            "commandName": "step.set 1",
+            "runCommand": setStep(1)
+          },
+          {
+            "commandName": "step.set 2",
+            "runCommand": setStep(2)
+          },
+          {
+            "commandName": "step.set 3",
+            "runCommand": setStep(3)
+          },
+          {
+            "commandName": "step.set 4",
+            "runCommand": setStep(4)
+          },
+          {
+            "commandName": "step.set 5",
+            "runCommand": setStep(5)
+          },
+          {
+            "commandName": "step.set 6",
+            "runCommand": setStep(6)
+          },
+          {
+            "commandName": "advance",
+            "runCommand": function() {
+              let curr_tab = +tabs.tabs( "option", "active" ) + 1;
+              if (curr_tab === 8) return;
+              return goTo(curr_tab + 1)();
+            }
+          },
+          {
+            "commandName": "regress",
+            "runCommand": function() {
+              let curr_tab = +tabs.tabs( "option", "active" ) + 1;
+              if (curr_tab === 1) return;
+              return goTo(curr_tab - 1)();
+            }
+          },
+          {
+            "commandName": "help",
+            "runCommand": function() {
+              let table = $("<table>", {
+                class: "styled",
+                css: {
+                  width: "100%"
+                }
+              });
+              let thead = $("<thead>");
+              let tbody = $("<tbody>");
+
+              let data = {
+                head: [
+                  'Cheat Code',
+                  'Description',
+                  'Notes'
+                ],
+                body: [
+                  [
+                    "help",
+                    "Shows list of commands.",
+                    ""
+                  ],
+                  [
+                    "goto <tab #>",
+                    "Goes to the specified tab, skipping any previous required steps.",
+                    "Must be between 1-8."
+                  ],
+                  [
+                    "advance",
+                    "Goes to the next tab, skipping any required steps.",
+                    "Cannot be used on last tab."
+                  ],
+                  [
+                    "regress",
+                    "Goes to the previous tab.",
+                    "Cannot be used on first tab."
+                  ],
+                  [
+                    "step.skip",
+                    "Skips the current step on the \"Getting Started\" tab.",
+                    "Cannot be used on last step."
+                  ],
+                  [
+                    "step.set <step #>",
+                    "Goes to the specified step on the \"Getting Started\" tab.",
+                    "Must be between 1-5."
+                  ]
+                ]
+              };
+
+              let head_row = $("<tr>");
+              for (column in data.head) {
+                let th = $("<th>", {
+                  text: data.head[column]
+                });
+                head_row.append(th);
+              }
+
+              for (row in data.body) {
+                let tr = $("<tr>");
+
+                for (column in data.body[row]) {
+                  let cell = $("<td>", {
+                    text: data.body[row][column]
+                  });
+                  tr.append(cell);
+                }
+
+                table.append(tr);
+              }
+
+              thead.append(head_row);
+              table.append(thead);
+
+              let dialog = $("<div>", {
+                title: "Cheat Codes"
+              });
+              $("<p>", {
+                text: "Below is a list of support \"cheat codes\"."
+              }).appendTo(dialog);
+              dialog.append(table);
+              dialog.dialog({
+                width: 950,
+                height: 400,
+                buttons: {
+                  Close: function() {
+                    dialog.dialog("close");
+                  }
+                }
+              });
+              dialog.parent()[0].find("button").trigger("focus");
+
+              return true;
+            }
           }
         ];
 
@@ -234,8 +398,11 @@
             updateTips(`Unknown command "${value}"`);
           }
           else {
-            found.runCommand();
-            me.dialog("close");
+            if (!found.runCommand()) {
+              input.addClass("ui-state-error");
+              updateTips(`Could not execute command "${value}"`);
+            }
+            else me.dialog("close");
           }
         }
 
@@ -297,13 +464,20 @@
       $("#tabs a.ui-tabs-anchor").addClass("disabled");
       $(`#tabs a[href=${+tab_to_enable}]`).removeClass("disabled");
 
+      let will_be_finished = false;
+
       $("#tabs a.disabled.ui-tabs-anchor").each(function(index) {
         if (index === tab_to_enable) return;
-        tabs.tabs("disable", index);
+        if (tab_to_enable === 7) {
+          will_be_finished = true;
+          tabs.tabs("enable", index);
+        }
+        else tabs.tabs("disable", index);
       });
 
       tabs.tabs("enable", +tab_to_enable);
       tabs.tabs("option", "active", +tab_to_enable);
+      if (will_be_finished) finished = true;
     };
     disable_tabs(0);
 
@@ -311,8 +485,13 @@
       let me = $(this);
       let link = me.attr('id');
 
-      disable_tabs(link);
-      increment_progressbar();
+      if (!finished) {
+        disable_tabs(link);
+        increment_progressbar();
+      }
+      else {
+        tabs.tabs("option", "active", +link);
+      }
     };
     $("a.advance").button().on("click", advance_step);
 
@@ -431,7 +610,7 @@
 
           break;
         }
-        case 5:  { // tuning extracted
+        case 5: default:  { // tuning extracted
           text_description = "You've now extracted your tuning and can begin modding!";
           src = "drink_deeply_extracted";
           alt = "Extracted tuning file";
@@ -452,7 +631,8 @@
         height: 500
       });
       let button = $("<a>", {
-        text: button_text
+        text: button_text,
+        tabindex: -1
       }).button().on("click", next_step);
 
       arena.append(description);
@@ -470,6 +650,7 @@
           for: input_needed.field.attr("id"),
           text: `${input_needed.description}: `
         })).append(input_needed.field).appendTo(arena);
+        input_needed.field.trigger("focus");
       }
       else if (special_operation) {
         let waiting_bar = $("<div>").progressbar({
@@ -477,6 +658,7 @@
           max: special_operation.max_value,
           complete: function() {
             $("<p>").append(button).appendTo(arena);
+            button.trigger("focus");
             clearTimeout(progressTimer);
           }
         });
@@ -494,6 +676,7 @@
       }
       else {
         $("<p>").append(button).appendTo(arena);
+        button.trigger("focus");
       }
 
       if (at_end) {
@@ -505,9 +688,17 @@
 
     const combobox = $("#combobox").combobox({
       select: function(event, ui) {
-        console.log($(ui));
+        let option = $(ui.item).val();
+
+        let source = `./documented code/${option}_documented.xml`;
+
+        $("#code_preview").find("pre").each(function(i, v) {
+          let me = $(v);
+          me.css("display", me.attr("data-src") === source ? "block" : "none");
+        });
       }
     });
+    $("#code_preview").find("pre").css("display", "none");
   });
 
 })();
