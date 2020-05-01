@@ -694,11 +694,11 @@
 
         $("#code_preview").find("pre").each(function(i, v) {
           let me = $(v);
-          me.css("display", me.attr("data-src") === source ? "block" : "none");
+          me.parent().css("display", me.attr("data-src") === source ? "block" : "none");
         });
       }
     });
-    $("#code_preview").find("pre").css("display", "none");
+    $("#code_preview").find("pre").parent().css("display", "none");
   });
 
 })();

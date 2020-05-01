@@ -358,6 +358,20 @@
           <div id="arena"></div>
         </div>
         <div id="tabs-7">
+          <p>
+            Below you will get to preview a choice few of the source files that
+            went into the making of this mod, highlighting the major facets of
+            code which went into its creation. While this is by no means an
+            exhaustive or completely in-depth look at the source code of the mod,
+            the code snippets I did chose to highlight show off the main
+            parts of the code which were fundamental to the mod and were integral
+            to establishing what I had envisioned in game.
+          </p>
+          <p>
+            Each code block has internal comments, but will be accompanied by a
+            more in-depth description of what the tuning is, why it was used/made,
+            and how I decided to add what I did.
+          </p>
           <div class="ui-widget">
             <p>
               <label>Select the tuning file to explore: </label>
@@ -373,12 +387,428 @@
             </p>
           </div>
           <div class="line-numbers code" id="code_preview">
-            <pre data-src="./documented code/buff_hidden_vampire_bloodiness_tier1_documented.xml"></pre>
-            <pre data-src="./documented code/buff_vampire_isbloody_documented.xml"></pre>
-            <pre data-src="./documented code/commodity_bloodiness_vampire_documented.xml"></pre>
-            <pre data-src="./documented code/loot_make_bloody_documented.xml"></pre>
-            <pre data-src="./documented code/loot_removeisbloody_documented.xml"></pre>
-            <pre data-src="./documented code/vampire_DrinkDeeply_documented.xml" data-line="116-179"></pre>
+            <div>
+              <p>
+                This, and the other two related buffs, as well as the three others
+                which apply to non-Vampire Sims, is rather straightforward. All it
+                does is apply a CAS part as an appearance modifier, giving the
+                Sim with this buff a specific (defined elsewhere) overlay on them.
+                In this case, it is blood around the Vampire's mouth, for obvious
+                reasons.
+              </p>
+              <p>
+                These buffs are the real "driving" force of the visible parts of
+                the mod, even if the buffs themselves are ironically hidden. They
+                are given to Sims as a result of the corresponding bloodiness commodity
+                reaching a desired state threshold.
+              </p>
+              <p>
+                The tier 1 bloodiness buff for Vampires is the only one shown as it
+                would be rather boring to show all 6 buffs considering they are rather
+                boilerplate.
+              </p>
+              <pre data-src="./documented code/buff_hidden_vampire_bloodiness_tier1_documented.xml"></pre>
+            </div>
+            <div>
+              <p>
+                This is a rather important buff, which is evident by the sheer size
+                of the tuning associated with it. This buff, among other things,
+                is the main "controller" of the bloodiness of the Vampire Sim,
+                giving them the interactions to wash off blood.
+              </p>
+              <p>
+                This buff is applied to every Vampire Sim who has their bloodiness
+                commodity not at the ground state (i.e. if the Sim is bloody, they
+                should have this buff).
+              </p>
+              <ul>
+                <li>
+                  Test Set - this test set ensures that only Vampire Sims can
+                  receive this buff. This prevents other Sims who are not Vampires
+                  from being given any of the "effects" of this buff, as this buff
+                  cannot be added to them. The Victim version of this buff has
+                  a similar test, though obviously reversed -- Vampires are unable
+                  to receive it.
+                </li>
+                <li>
+                  Target Super Affordances - When a Vampire Sim has this buff,
+                  they will gain access to two new interactions, allowing for them
+                  to wash blood off themselves in both showers and tubs.
+                  <ul>
+                    <li>
+                      For showers:
+                      <ul>
+                        <li>Affordance: the affordance to add. In this case, it is
+                          a clone of the shower interaction which will remove all
+                          blood from the Vampire Sim.</li>
+                        <li>Object filter: any object that is tagged as a "shower"
+                            basically will have this affordance adding to it and
+                            available to the Sim.</li>
+                      </ul>
+                    </li>
+                    <li>
+                      For tubs, it is the same as above, but the affordance is
+                      instead a clone of the bathing interaction, and the object
+                      filter instead applies to anything tagged as a "bathtub".
+                    </li>
+                  </ul>
+                  By adding a Target Super Affordance tuning to the buff, injection
+                  is not needed. While this can be also achieved by Python, I found
+                  this method much easier, and allowed for me to not have to keep a
+                  list of showers and tubs, or find a way to inject into objects with
+                  a specific tag as the game already does. "Don't reinvent the wheel"
+                  essentially. This also has the added benefit of automatically working
+                  with custom (CC) showers and tubs, as long as they are tagged
+                  correctly.
+                </li>
+                <li>
+                  Game Effect Modifier - this is the biggest "bit" of the buff,
+                  and does various things. This also allowed me to avoid having to
+                  have had used Python to achieve what I wanted. While this method
+                  was by now means "easier", I was happy with the final results.
+                  <ul>
+                    <li>
+                      Affordance Modifiers - This allows for affordances (read: interactions)
+                      to be directly modified by this buff. This allows for any
+                      interaction that would make a Sim be "wet" to decrease the
+                      bloodiness commodity, and separately allows for the brush teeth
+                      interactions to clean the blood off a Vampire Sim as an alternative
+                      to showering or bathing.
+                      <ul>
+                        <li>
+                          For modification of "getting wet" interactions:
+                          <ul>
+                            <li>
+                              Basic Extras - modify the specified interactions'
+                              <code>basic_extras</code>, essentially allowing for
+                              adding to the outcome of these interactions.
+                              <ul>
+                                <li>
+                                  Buff - add a buff to the Vampire when these interactions
+                                  are started. This buff allows for a continuous, but
+                                  slow, decrease of the bloodiness stat for the duration of
+                                  the interaction, which allows for a mirroring of
+                                  the perioid stat change of the drinking interactions.
+                                </li>
+                                <li>
+                                  Loot List, at beginning: this fires a loot which
+                                  decreases a set amount the commodity at the onset
+                                  of the interaction a sizeable amount. This accounts
+                                  for the duration of the interaction, so that just
+                                  running the interaction decreases the stat, even
+                                  if the interaction is fast, or gets interrupted.
+                                </li>
+                                <li>
+                                  Loot List, at end: remove the buff that was
+                                  added at the beginning of this interaction by
+                                  <code>buff_fire_and_forget</code>.
+                                </li>
+                              </ul>
+                            </li>
+                            <li>
+                              Affordance List - a list of affordances which will
+                              be affected by this injection. In this case, it's a custom
+                              affordance list, since the amount of interactions is
+                              rather quite large, but it includes anything I considered
+                              "something that would leave your Sim wet", including:
+                              <ul>
+                                <li>Swimming</li>
+                                <li>Playing in the rain</li>
+                                <li>Bathing but <strong>not</strong> the
+                                    "Wash off Blood" interactions themselves</li>
+                                <li>And more</li>
+                              </ul>
+                            </li>
+                          </ul>
+                        </li>
+                        <li>
+                          For modificaton of "brushing teeth" (there are two
+                          versions, one for "off the grid" lots that have limited water):
+                          <ul>
+                            <li>Basic Extras - these are similar to the above, but
+                                tailored for the brushing teeth interactions. The
+                                same setup of <code>buff_fire_and_forget</code> and
+                                two loot list injections was used here.</li>
+                            <li>Affordances - since this was only two affordances
+                                being modified, I decided to just list them instead
+                                of making an affordance list.</li>
+                          </ul>
+                        </li>
+                      </ul>
+                    </li>
+                    <li>
+                      Continuous Statistic Modifier - For every Sim minute a
+                      Vampire Sim has this buff (that is, is covered in blood in
+                      some form or another), a commodity for "sticky blood" is increased.
+                      What this does, basically, is that, when a Vampire has had
+                      blood on their face and body for too long without having
+                      washed it off, they will get uncomfortable from having
+                      "sticky blood" all over themselves. I added this as a cool
+                      little detail to help flesh-out the mod. Blood, after all,
+                      dries and who likes being covered in copious amounts of dried
+                      blood?
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+              <pre data-src="./documented code/buff_vampire_isbloody_documented.xml"></pre>
+            </div>
+            <div>
+              <p>
+                This commodity is what "ties" everything together, and for that
+                reason, is one of the most integral part of the mod. The main reason
+                I used a commodity is because of the power and flexibility they
+                offer: since commodities have discreet states, the "bloodiness" of
+                a Sim can rise and fall over time, through various activity (i.e.
+                drinking from a Sim, getting wet, or just the passage of time).
+                A commodity also provides the unique ability for the bloodiness of
+                a Sim to slowly decay over time instead of just all at once going
+                away.
+              </p>
+              <p>
+                The commodity itself was rather straightforward. It consists of
+                four disgreet states, three of which are "tiers" of bloodiness and
+                one which represents the "ground state" of not being bloody at all.
+              </p>
+              <ul>
+                <li>
+                  Ground State - Value of 0: Since it's the ground state, it must
+                  re-establish what the Vampire Sim would be like before having
+                  had this commodity set. That means that when entering this state,
+                  any changes this commodity brought about must be reversed.
+                  <ul>
+                    <li>Loot List: Apply the specified loot whenever this commodity
+                        reaches this state. In particular, this loot removes the buffs and
+                        trait associated with being bloody.
+                    </li>
+                  </ul>
+                </li>
+                <li>
+                  Tier 1 - Between 1 and 240: This is the first "tier" of bloodiness.
+                  This state must first establish some groundwork in the event a
+                  Sim loads with this value instead of coming to it "naturally",
+                  such as saving and reloading, or from travelling.
+                  <ul>
+                    <li>
+                        Loot List: Apply the specified loot whenever this commodity
+                        enters this state. This loot establishes some of the groundwork:
+                        the trait and buff that controls being bloody.
+                    </li>
+                    <li>
+                       Buff: This is the tier one buff that a Vampire gets
+                       when they are bloody, giving them the first appearance
+                       modifier.
+                    </li>
+                    <li>
+                      Buff Threshold: To prevent the bloodiness buff from being
+                      applied too soon, there is a slight "deplay" to the adding
+                      of this buff. The buff will only be added once the commodity
+                      reached a value of at least 30, which provides some wiggle
+                      room for the actual drinking interaction to have run the
+                      part where a Sim gets bitten before applying bloodiness to
+                      the Vampire's mouth.
+                    </li>
+                  </ul>
+                </li>
+                <li>
+                  Tier 2 - Between 241 and 480: This is the second "tier" of bloodiness.
+                  As before, this state must establish some groundwork to ensure
+                  that everything is set up properly. This state also does not need
+                  a delay factor as the previous one did.
+                  <ul>
+                    <li>
+                        Loot List: Apply the specified loot whenever this commodity
+                        enters this state. This loot establishes some of the groundwork:
+                        the trait and buff that controls being bloody.
+                    </li>
+                    <li>
+                       Buff: This is the tier two buff that a Vampire gets
+                       when they are bloody, giving them the second appearance
+                       modifier.
+                    </li>
+                  </ul>
+                </li>
+                <li>
+                  Tier 3 - Between 481 and 720: This is the third and last "tier"
+                  of bloodiness. This state must also establish some groundwork
+                  to ensure that everything is set up properly like the others.
+                  As is the case for the previous state, there is no need for a
+                  delay factor here.
+                  <ul>
+                    <li>
+                        Loot List: Apply the specified loot whenever this commodity
+                        enters this state. This loot establishes some of the groundwork:
+                        the trait and buff that controls being bloody.
+                    </li>
+                    <li>
+                       Buff: This is the tier three buff that a Vampire gets
+                       when they are bloody, giving them the last and most bloody
+                       appearance modifier.
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+              <p>
+                This commodity is incremented by the drinking interactions and
+                is lowered by any interaction which may get a Sim "wet", or by
+                the brushing of one's teeth. Should a Sim choose the "Wash off Blood"
+                interaction, all blood will be purged from their body and the commodity
+                reset to its ground state of 0.
+              </p>
+              <pre data-src="./documented code/commodity_bloodiness_vampire_documented.xml"></pre>
+            </div>
+            <div>
+              <p>
+                This loot is rather quite simple, doing 3 main, relatively-straightforward
+                operations. This is also the loot that gets run every time the
+                bloodiness commodity is pushed outside of its ground state.
+              </p>
+              <ul>
+                <li>
+                  Adds the hidden "Is Bloody" buff which is important for several
+                  things but namely is responsbile for adding the interactions
+                  to wash off blood.
+                </li>
+                <li>
+                  Adds the visible buff Vampires get when they are bloody. While
+                  this buff doesn't <em>do</em> much all on its own, it does add
+                  something to the game.
+                </li>
+                <li>
+                  Adds a trait which signifies that the Sim is covered in blood.
+                  This trait at the moment only adds the Whim to wash off blood,
+                  but in the future will have some proximity buffs associated with
+                  it: when a Vampire is covered in blood, other Sims will get tense
+                  and react negatively to being "caught" red-faced, and other
+                  Vampires (particularly mean or evil ones) may cheer them on.
+                </li>
+              </ul>
+              <p>
+                While this loot is relatively simple in and of itself, it can be
+                thought of as analogous to a function of sorts, doing a routine
+                set of actions every time a Vampire becomes bloody.
+              </p>
+              <pre data-src="./documented code/loot_make_bloody_documented.xml"></pre>
+            </div>
+            <div>
+              <p>
+                This is essentially the counterpart to the "Make Bloody" loot, and
+                can be seen as sort of "clean up" code. It undoes that which the
+                "Make Bloody" loot and the bloodiness commodity itself does.
+              </p>
+              <ul>
+                <li>
+                  Removal of all blood-related buffs: this is important as it
+                  removes any buffs, hidden and visible, that a Vampire Sim may
+                  have gained during gameplay. While under normal circumstances
+                  the visible buffs would be removed once the a Sim transitions
+                  out of the state associated with them, this is a fail-safe and
+                  some extra cleanup in case a Sim all of a sudden finds themselves
+                  in the ground state.
+                </li>
+                <li>
+                  Removal of the "Is Bloody" trait: this ensures that the Sim
+                  will no longer get the Whim to wash blood off their body, since
+                  they are, in fact, no longer bloody.
+                </li>
+              </ul>
+              <pre data-src="./documented code/loot_removeisbloody_documented.xml"></pre>
+            </div>
+            <div>
+              <p>
+                This is probably one of the most important parts of this mod, as
+                it's the place where the mod gets "hooked into" the game.
+              </p>
+              <p>
+                This is an override of the Drink Deeply interaction available for
+                Vampire Sims, and, for the most part, its code has been left largely
+                untouched. However, there are some important additions to the code
+                which allow for interfacing with the bloodiness and blood level commodities,
+                thus setting in motion the rest of the mod.
+              </p>
+              <ul>
+                <li>
+                  Periodic Stat Change: Bloodiness of Actor ("The Vampire")
+                  <ul>
+                    <li>Amount: 10</li>
+                    <li>Subject: Actor</li>
+                    <li>
+                      Behaviour: Apply At Interval Only
+                      From the TDESCs:
+                      <blockquote class="quote">
+                        If continuous statistic is using interval behavior,
+                        the amount tuned will be given at specified interval if
+                        chance and tests succeeds.  Continuous statistics WILL decay
+                        between interval time.
+                      </blockquote>
+                    </li>
+                    <li>Stat: the bloodiness stat for Vampires</li>
+                    <li>
+                      Tests: these tests must both pass in order for the stat to
+                      be incremented. Both of these tests are to ensure that the
+                      stat is only increased at the desired moments during the
+                      animation of the interaction.
+                      <ul>
+                        <li>
+                          Sim <strong>must</strong> have the "Drink In Progress"
+                          buff.
+                        </li>
+                        <li>
+                          Sim must <strong>not</strong> have the
+                          "Drink in Progress Delay Bloodiness" buff.
+                        </li>
+                      </ul>
+                    </li>
+                  </ul>
+                </li>
+                <li>
+                  Periodic Stat Change: Bloodiness of TargetSim ("The Victim")
+                  <ul>
+                    <li>Amount: 10</li>
+                    <li>Subject: TargetSim</li>
+                    <li>
+                      Behaviour: Apply At Interval Only
+                    </li>
+                    <li>Stat: the bloodiness stat for Victims</li>
+                    <li>
+                      Tests: these tests must both pass in order for the stat to
+                      be incremented. Both of these tests are to ensure that the
+                      stat is only increased at the desired moments during the
+                      animation of the interaction.
+                      <ul>
+                        <li>
+                          Sim <strong>must</strong> have the "Drink In Progress"
+                          buff.
+                        </li>
+                        <li>
+                          Sim must <strong>not</strong> have the
+                          "Drink in Progress Delay Bloodiness (Victim)" buff.
+                        </li>
+                      </ul>
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+              <p>
+                The alteration to this (and the other related drinking interactions)
+                occurs in the <code>periodic_stat_change</code> part of the
+                interaction's <code>basic_content</code>. The basic content of an
+                interaction defines the animation that plays, depending on how it's
+                tuned, for the duration of the interaction. This allows for an
+                interaction to have "parts" which contribute to one larger "outcome".
+              </p>
+              <p>
+                The normal Drink interaction increases a Vampire's thirst and decreases
+                the Victim's energy, so the groundwork was already there. Doing it
+                like this, instead of just in the outcome, allows more closely to
+                mirror what one would expect: the Vampire and the Victim get
+                <em>progressively more</em> bloody as the drinking interaction occurs.
+                This also has the added benefit that, the longer a Sim drinks, the
+                bloodier both their Victim and they themselves will get, which
+                would not be possible strictly from altering the outcome alone.
+              </p>
+              <pre data-src="./documented code/vampire_DrinkDeeply_documented.xml" data-line="116-179"></pre>
+            </div>
           </div>
           <p><a id="7" class="advance">That's all, folks!</a></p>
         </div>
