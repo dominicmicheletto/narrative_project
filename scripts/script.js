@@ -358,7 +358,6 @@
                   }
                 }
               });
-              dialog.parent()[0].find("button").trigger("focus");
 
               return true;
             }
