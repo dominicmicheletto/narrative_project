@@ -451,7 +451,7 @@
     };
     const progress = $("#progress").progressbar({
       value: 1,
-      max: $(tabs.find("ul")[0]).children().length - 1,
+      max: $(tabs.find("ul")[0]).children().length,
       change: calculate_value
     });
     const increment_progressbar = function() {
@@ -467,8 +467,8 @@
       let will_be_finished = false;
 
       $("#tabs a.disabled.ui-tabs-anchor").each(function(index) {
-        if (index === tab_to_enable) return;
-        if (tab_to_enable === 7) {
+        if (index === +tab_to_enable) return;
+        if (+tab_to_enable === 7) {
           will_be_finished = true;
           tabs.tabs("enable", index);
         }
@@ -490,6 +490,9 @@
         increment_progressbar();
       }
       else {
+        $("#tabs a.disabled.ui-tabs-anchor").each(function(index) {
+          tabs.tabs("enable", index);
+        });
         tabs.tabs("option", "active", +link);
       }
     };
