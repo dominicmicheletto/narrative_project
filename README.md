@@ -11,7 +11,13 @@ Tuning name: `vampire_DrinkDeeply`
 # Cheat Codes
 Use `Ctrl+Alt+C` to access the cheat console.
 
-| Cheat Code | Description |
-|------------|-------------|
-| goto <tab #>| Goes to the specified tab, skipping any previous required steps. |
-| step.skip | Skips the current step on the "Getting Started" tab |
+| Cheat Code | Description | Notes |
+|------------|-------------|-------|
+| help | Shows list of commands. | |
+| - | - | - |
+| goto <tab #>| Goes to the specified tab, skipping any previous required steps. | Must be between 1-8. |
+| advance | Goes to the next tab, skipping any required steps. | Cannot be used on last tab. |
+| regress | Goes to the previous tab. | Cannot be used on first tab. |
+| - | - | - |
+| step.skip | Skips the current step on the "Getting Started" tab. | Cannot be used on last step. |
+| step.set <step #> | Goes to the specified step on the "Getting Started" tab. | Must be between 1-5. |
